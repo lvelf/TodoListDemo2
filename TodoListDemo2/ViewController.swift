@@ -7,7 +7,125 @@
 
 import UIKit
 
-class ViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
+//
+//  ViewController.swift
+//  CompositionalLayout
+//
+//  Created by 诺诺诺诺诺 on 2022/10/22.
+//
+
+class ViewController: UIViewController,UICollectionViewDataSource {
+    
+    @IBOutlet var collectionView: UICollectionView!
+    
+    
+    var NameData:[String] = ["eeee","lese","goto","todolist"]
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+        config()
+        view.addSubview(collectionView)
+    }
+    
+    func config() {
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        
+        collectionView.dataSource = self
+        collectionView.register(MyCell.self
+                                , forCellWithReuseIdentifier: "cell")
+    }
+    
+    
+    func createLayout() -> UICollectionViewCompositionalLayout {
+            // 1
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                    heightDimension: .absolute(600))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+            // 2
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.7), heightDimension: .absolute(600))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+
+            // 3
+            group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: nil, top: nil, trailing: .fixed(8), bottom: nil)
+
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+            let layout = UICollectionViewCompositionalLayout(section: section)
+            return layout
+    }
+
+}
+
+extension ViewController {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 4
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        let title = UILabel(frame: CGRectMake(20, 20, cell.bounds.size.width, 40))
+        title.text = NameData[indexPath.row]
+        cell.contentView.addSubview(title)
+        
+        if indexPath.row == 3 {
+            let button = UIButton()
+            button.frame = cell.contentView.frame
+            button.addTarget(self, action: #selector(didTapButton), for: .touchDown)
+            print("ni zai gan ma")
+            cell.contentView.addSubview(button)
+        }
+        
+        return cell
+    }
+    
+    @objc func didTapButton() {
+        print("byd")
+        
+        let rootVC = ListViewController()
+        let navVC = UINavigationController(rootViewController: rootVC)
+        
+        navVC.modalPresentationStyle = .fullScreen
+        present(navVC, animated:  true)
+    }
+}
+
+class MyCell: UICollectionViewCell {
+    
+    var label = UILabel()
+    
+    override init(frame: CGRect) {
+       // print("a?a?")
+        super.init(frame: frame)
+        //label.text = "test"
+        //contentView.addSubview(label)
+        contentView.backgroundColor = UIColor.randomColor
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("ee")
+    }
+    
+}
+
+extension UIColor {
+    //返回随机颜色
+    class var randomColor: UIColor {
+        get {
+            let red = CGFloat(arc4random()%256)/255.0
+            let green = CGFloat(arc4random()%256)/255.0
+            let blue = CGFloat(arc4random()%256)/255.0
+            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+        }
+    }
+}
+
+
+
+
+class ListViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
@@ -42,7 +160,8 @@ class ViewController: UIViewController,UITableViewDataSource,UITableViewDelegate
         let actionItem = UIBarButtonItem(systemItem: .action, primaryAction: nil, menu: createMenu())
         
         self.navigationItem.rightBarButtonItems = [addButtom,actionItem]
-    
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Dismiss", style: .plain, target: self, action: #selector(dismissSelf))
     }
     
     @objc private func didTapAdd() {
@@ -68,9 +187,14 @@ class ViewController: UIViewController,UITableViewDataSource,UITableViewDelegate
         overrideUserInterfaceStyle = .light
     }
     
+    @objc func dismissSelf() {
+        dismiss(animated: true,completion: nil)
+    }
+    
 }
 
-extension ViewController {
+extension ListViewController {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return models.count
     }
@@ -117,7 +241,7 @@ extension ViewController {
 
 
 //Core Data
-extension ViewController {
+extension ListViewController {
     func getAllItems() {
         do {
             models = try context.fetch(ToDoListItem.fetchRequest())
@@ -198,7 +322,7 @@ extension ViewController {
     }
 }
 
-extension ViewController {
+extension ListViewController {
     func createMenu() -> UIMenu {
         // 第一个菜单
         let sortname = UIAction(title: "sortbyname", image: UIImage(systemName: "heart.fill")) { _ in
