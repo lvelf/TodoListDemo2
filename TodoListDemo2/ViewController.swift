@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreData
 
 //
 //  ViewController.swift
@@ -42,13 +43,21 @@ class ViewController: UIViewController,UICollectionViewDataSource {
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                     heightDimension: .absolute(600))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-
+        
+        let itemAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+        let itemAnother = NSCollectionLayoutItem(layoutSize: itemAnotherSize)
             // 2
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.7), heightDimension: .absolute(600))
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.7), heightDimension: .absolute(600))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+            let groupAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+            
+            let groupAnother = NSCollectionLayoutGroup.vertical(layoutSize: groupAnotherSize, repeatingSubitem: itemAnother, count: 2)
 
             // 3
             group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: nil, top: nil, trailing: .fixed(8), bottom: nil)
+//
+//        let groups = NSCollectionLayoutGroup.vertical(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)), subitems: [group,groupAnother])
 
             let section = NSCollectionLayoutSection(group: group)
             section.orthogonalScrollingBehavior = .continuous
@@ -74,10 +83,10 @@ extension ViewController {
             let button = UIButton()
             button.frame = cell.contentView.frame
             button.addTarget(self, action: #selector(didTapButton), for: .touchDown)
-            print("ni zai gan ma")
             cell.contentView.addSubview(button)
         }
         
+        cell.contentView.layer.cornerRadius = 10
         return cell
     }
     
@@ -123,6 +132,14 @@ extension UIColor {
 }
 
 
+class MyTableCell: UITableViewCell {
+    var label = UILabel()
+    var choosed = false
+    
+    
+    
+   
+}
 
 
 class ListViewController: UIViewController,UITableViewDataSource,UITableViewDelegate {
@@ -131,12 +148,27 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
 
     let tableView: UITableView = {
         let table = UITableView()
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        table.register(MyTableCell.self, forCellReuseIdentifier: "cell")
         
         return table
     }()
     
     private var models = [ToDoListItem]()
+    
+    private var selectedIndexs: [Int] = []
+    
+    private let floatingButton: UIButton = {
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 70, height: 70))
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 35
+        button.backgroundColor = .systemBlue
+        let image = UIImage(systemName: "plus",
+                            withConfiguration: UIImage.SymbolConfiguration(pointSize: 40, weight: .medium))
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        button.setTitleColor(.white, for: .normal)
+        return button
+    }()
     
     
     
@@ -146,6 +178,22 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
         
         title = "To Do List"
         configuration()
+       
+        tableView.allowsMultipleSelection = true
+        //deleteAllRecords()
+        configFloatingButton()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        floatingButton.frame = CGRect(x: 50,
+                                      y: view.frame.size.height - 150
+                                        , width: 70, height: 70)
+    }
+    
+    func configFloatingButton() {
+        view.addSubview(floatingButton)
+        floatingButton.addTarget(self, action: #selector(didTapAdd), for: .touchDown)
     }
     
     func configuration() {
@@ -155,13 +203,18 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
         tableView.frame = view.bounds
         getAllItems()
         
-        let addButtom = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
+//        let addButtom = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(didTapAdd))
         
         let actionItem = UIBarButtonItem(systemItem: .action, primaryAction: nil, menu: createMenu())
         
-        self.navigationItem.rightBarButtonItems = [addButtom,actionItem]
+        self.navigationItem.rightBarButtonItems = [actionItem,editButtonItem]
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Dismiss", style: .plain, target: self, action: #selector(dismissSelf))
+    }
+    
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        self.tableView.setEditing(editing, animated: true)
     }
     
     @objc private func didTapAdd() {
@@ -209,32 +262,71 @@ extension ListViewController {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        let item = models[indexPath.row]
+//        let item = models[indexPath.row]
+//
+//        let sheet = UIAlertController(title: "Edit", message: nil, preferredStyle: .actionSheet)
+//
+//        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        sheet.addAction(UIAlertAction(title: "Edit", style: .default,handler: { _ in
+//            let alert = UIAlertController(title: "Edit Item", message: "Enter new item", preferredStyle: .alert)
+//
+//            alert.addTextField(configurationHandler: nil)
+//            alert.textFields?.first?.text = item.name
+//            alert.addAction(UIAlertAction(title: "Submit", style: .cancel,handler: { [weak self] _ in
+//                guard let field = alert.textFields?.first, let newName = field.text, !newName.isEmpty else {
+//                    return
+//                }
+//
+//                self?.updateItem(item: item, newName: newName)
+//            }))
+//
+//            self.present(alert, animated: true)
+//
+//        }))
+//        sheet.addAction(UIAlertAction(title: "Delete", style: .destructive,handler: { [weak self] _ in
+//            self?.deleteItem(item: item)
+//        }))
+//
+//        present(sheet,animated: true)
         
-        let sheet = UIAlertController(title: "Edit", message: nil, preferredStyle: .actionSheet)
-        
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        sheet.addAction(UIAlertAction(title: "Edit", style: .default,handler: { _ in
-            let alert = UIAlertController(title: "Edit Item", message: "Enter new item", preferredStyle: .alert)
-            
-            alert.addTextField(configurationHandler: nil)
-            alert.textFields?.first?.text = item.name
-            alert.addAction(UIAlertAction(title: "Submit", style: .cancel,handler: { [weak self] _ in
-                guard let field = alert.textFields?.first, let newName = field.text, !newName.isEmpty else {
-                    return
-                }
-                
-                self?.updateItem(item: item, newName: newName)
-            }))
-            
-            self.present(alert, animated: true)
-        
-        }))
-        sheet.addAction(UIAlertAction(title: "Delete", style: .destructive,handler: { [weak self] _ in
-            self?.deleteItem(item: item)
-        }))
-        
-        present(sheet,animated: true)
+     
+        let cell = self.tableView.cellForRow(at: indexPath) as! MyTableCell
+        if cell.choosed == false {
+            cell.accessoryType = .checkmark
+            cell.choosed = true
+            cell.textLabel?.textColor = .gray
+        }
+        else {
+            cell.choosed = false
+            cell.accessoryType = .none
+            cell.textLabel?.textColor = .black
+        }
+    }
+    
+    //设置哪些行可以编辑
+     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+         return true
+       }
+       
+       // 设置单元格的编辑的样式
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+           return UITableViewCell.EditingStyle.delete
+       }
+       
+       //设置点击删除之后的操作
+       func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+           if editingStyle == .delete {
+               // Delete the row from the data source
+               self.deleteItem(item: self.models[indexPath.row])
+               
+           } else if editingStyle == .insert {
+               // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
+           }
+       }
+    
+    func tableView(_ tableView: UITableView, didDeselectRowAt indexPath: IndexPath) {
+        let cell = self.tableView.cellForRow(at: indexPath)
+        cell?.accessoryType = .none
     }
 }
 
@@ -242,6 +334,22 @@ extension ListViewController {
 
 //Core Data
 extension ListViewController {
+    
+    func deleteAllRecords() {
+        let delegate = UIApplication.shared.delegate as! AppDelegate
+        let context = delegate.persistentContainer.viewContext
+
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: "CurrentCourse")
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print ("There was an error")
+        }
+    }
+    
     func getAllItems() {
         do {
             models = try context.fetch(ToDoListItem.fetchRequest())
