@@ -182,6 +182,7 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
         tableView.allowsMultipleSelection = true
         //deleteAllRecords()
         configFloatingButton()
+        configLongPress()
     }
     
     override func viewDidLayoutSubviews() {
@@ -194,6 +195,11 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
     func configFloatingButton() {
         view.addSubview(floatingButton)
         floatingButton.addTarget(self, action: #selector(didTapAdd), for: .touchDown)
+    }
+    
+    func configLongPress() {
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(sender:)))
+        tableView.addGestureRecognizer(longPress)
     }
     
     func configuration() {
@@ -236,6 +242,27 @@ class ListViewController: UIViewController,UITableViewDataSource,UITableViewDele
         overrideUserInterfaceStyle = .dark
     }
     
+    @objc private func handleLongPress(sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            let touchPoint = sender.location(in: tableView)
+            if let indexPath = tableView.indexPathForRow(at: touchPoint) {
+                // your code here, get the row for the indexPath or do whatever you want
+                let alert = UIAlertController(title: "Edit Item", message: "Enter new item", preferredStyle: .alert)
+                let item = models[indexPath.row]
+                
+                alert.addTextField(configurationHandler: nil)
+                alert.textFields?.first?.text = item.name
+                alert.addAction(UIAlertAction(title: "Submit", style: .cancel,handler: { [weak self] _ in
+                guard let field = alert.textFields?.first, let newName = field.text, !newName.isEmpty else {
+                        return
+                    }
+                
+                   self?.updateItem(item: item, newName: newName)}))
+                
+                self.present(alert, animated: true)
+            }
+        }
+    }
     func turnTolightView() {
         overrideUserInterfaceStyle = .light
     }
