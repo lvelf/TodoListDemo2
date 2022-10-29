@@ -181,6 +181,7 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             
         }
         
+        
         return layout
     }
     
@@ -197,6 +198,12 @@ class ViewController: UIViewController,UICollectionViewDelegate {
         
         collectionView.register(HeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
         
+        
+        collectionView.backgroundColor = .systemGray6
+        collectionView.layer.cornerRadius = 5
+        collectionView.layer.masksToBounds = true
+        collectionView.isScrollEnabled = false
+        collectionView.showsHorizontalScrollIndicator = false
         
     }
     
@@ -223,6 +230,18 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             cell.textLabel.text = self.datas[indexPath.section][indexPath.row]
             cell.textLabel.textColor = .systemBlue
             cell.contentView.addSubview(cell.textLabel)
+            
+            
+            cell.backgroundColor = .white
+            
+            cell.contentView.layer.cornerRadius = 10;
+
+            cell.layer.cornerRadius = 10;
+
+            cell.contentView.layer.masksToBounds = true;
+
+            
+
             
 //            if indexPath.section == 1 {
 //                print("didadd")
@@ -305,6 +324,8 @@ class LabelCell: UICollectionViewCell {
 //        let headerDisclosureOption = UICellAccessory.OutlineDisclosureOptions(style: .header)
 //        self.accessories = [.outlineDisclosure(options:headerDisclosureOption)]
         //self.backgroundColor = .systemBrown
+        
+        
     }
     
     public func reconfig(title: String) {
