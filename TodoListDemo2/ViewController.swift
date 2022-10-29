@@ -131,6 +131,7 @@ class ViewController: UIViewController,UICollectionViewDelegate {
     private var dataSource: DataSource!
     
     private var datas: [[String]] = [["今天","计划","全部","旗标"],["今日任务"]]
+    private var imagedatas: [[String]] = [["mic.fill","sun.min","pencil","pencil.and.outline"],["sunset.fill"]]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -240,7 +241,10 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             cell.layer.cornerRadius = 10;
 
             cell.contentView.layer.masksToBounds = true;
-
+            
+            if indexPath.section == 0 {
+                cell.configImage(name: self.imagedatas[indexPath.section][indexPath.row])
+            }
             
 
             
@@ -292,11 +296,14 @@ extension ViewController {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        let rootVC = ListViewController()
-        let navVC = UINavigationController(rootViewController: rootVC)
-    
-        navVC.modalPresentationStyle = .fullScreen
-        present(navVC, animated:  true)
+        
+        if indexPath.section == 1 {
+            let rootVC = ListViewController()
+            let navVC = UINavigationController(rootViewController: rootVC)
+        
+            navVC.modalPresentationStyle = .fullScreen
+            present(navVC, animated:  true)
+        }
     }
     
 }
@@ -310,6 +317,8 @@ class LabelCell: UICollectionViewCell {
         return label
     }()
     
+    public var image = UIImage()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         config()
@@ -321,6 +330,7 @@ class LabelCell: UICollectionViewCell {
     
     private func config() {
         textLabelConstraints()
+        
 //        self.contentView.addSubview(textLabel)
 //        let headerDisclosureOption = UICellAccessory.OutlineDisclosureOptions(style: .header)
 //        self.accessories = [.outlineDisclosure(options:headerDisclosureOption)]
@@ -353,6 +363,15 @@ class LabelCell: UICollectionViewCell {
               //textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
             ])
           }
+    
+    public func configImage(name: String) {
+        var imageView: UIImageView = UIImageView(frame: CGRect(x: 20, y: 20, width: 40, height: 40))
+        image = UIImage(systemName: name)!
+        imageView.image = image
+        
+        contentView.addSubview(imageView)
+        
+    }
     
     public func configButton() {
         let button = UIButton()
