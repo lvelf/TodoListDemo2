@@ -162,7 +162,7 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             
             let groupWidth = columns == 1 ? NSCollectionLayoutDimension.fractionalWidth(1.0) : NSCollectionLayoutDimension.fractionalWidth(0.5)
             
-            let groupSize1 = NSCollectionLayoutSize(widthDimension: groupWidth, heightDimension: .absolute(200))
+            let groupSize1 = NSCollectionLayoutSize(widthDimension: groupWidth, heightDimension: .absolute(120))
             let groupSize2 = NSCollectionLayoutSize(widthDimension: groupWidth, heightDimension: .absolute(50))
             
             let group = columns == 1 ? NSCollectionLayoutGroup.horizontal(layoutSize: groupSize2, repeatingSubitem: item, count: columns) : NSCollectionLayoutGroup.horizontal(layoutSize: groupSize1, repeatingSubitem: item, count: columns)
@@ -226,10 +226,11 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             
             //cell.reconfig(title: self.datas[indexPath.section][indexPath.row])
 //            cell.textLabel.textAlignment = .center
-//            cell.textLabel.font = UIFont(name: "AvenirNext-Bold", size: 15)
+            cell.textLabel.font = UIFont(name: "AvenirNext-Bold", size: 18)
+            cell.textLabel.textColor = indexPath.section == 0 ? .systemGray4 : .systemBlue
             cell.textLabel.text = self.datas[indexPath.section][indexPath.row]
-            cell.textLabel.textColor = .systemBlue
-            cell.contentView.addSubview(cell.textLabel)
+            //cell.textLabel.textColor = .systemBlue
+            //cell.contentView.addSubview(cell.textLabel)
             
             
             cell.backgroundColor = .white
@@ -345,10 +346,11 @@ class LabelCell: UICollectionViewCell {
         
         textLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-              textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-              textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+              //textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+              //textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
               textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
+              textLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
+              //textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
             ])
           }
     
@@ -390,10 +392,13 @@ class HeaderView: UICollectionViewCell {
         
         textLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
+                
+                textLabel.leftAnchor.constraint(equalTo: centerXAnchor),
               textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
               textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
               textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
+              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+            
             ])
           }
 }

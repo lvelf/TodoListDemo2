@@ -14,8 +14,8 @@
             filePath = "TodoListDemo2/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "487"
-            endingLineNumber = "487"
+            startingLineNumber = "492"
+            endingLineNumber = "492"
             landmarkName = "viewDidLayoutSubviews()"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,10 +30,10 @@
             filePath = "TodoListDemo2/ViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "486"
-            endingLineNumber = "486"
-            landmarkName = "ListViewController"
-            landmarkType = "3">
+            startingLineNumber = "491"
+            endingLineNumber = "491"
+            landmarkName = "viewDidLayoutSubviews()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
