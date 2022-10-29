@@ -275,8 +275,9 @@ class ViewController: UIViewController,UICollectionViewDelegate {
         }
             
             headerView.textLabel.text = indexPath.section == 0 ? " " : "我的列表"
+            headerView.textLabel.font = UIFont(name: "AvenirNext-Bold", size: 30)
             
-            headerView.textLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+           // headerView.textLabel.font = UIFont.preferredFont(forTextStyle: .headline)
             return headerView
             
         }
@@ -365,7 +366,7 @@ class LabelCell: UICollectionViewCell {
           }
     
     public func configImage(name: String) {
-        var imageView: UIImageView = UIImageView(frame: CGRect(x: 20, y: 20, width: 40, height: 40))
+        let imageView: UIImageView = UIImageView(frame: CGRect(x: 20, y: 20, width: 40, height: 40))
         image = UIImage(systemName: name)!
         imageView.image = image
         
@@ -388,7 +389,8 @@ class HeaderView: UICollectionViewCell {
     public var textLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
-        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        //label.font = UIFont.preferredFont(forTextStyle: .headline)
+
         return label
     }()
     
@@ -409,14 +411,16 @@ class HeaderView: UICollectionViewCell {
     private func textLabelConstraints() {
         addSubview(textLabel)
         
+        
+        
         textLabel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 
-                textLabel.leftAnchor.constraint(equalTo: centerXAnchor),
+                textLabel.leftAnchor.constraint(equalTo: leftAnchor),
               textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-              textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-              textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
+              //textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+              //textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+              //textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             
             ])
           }
