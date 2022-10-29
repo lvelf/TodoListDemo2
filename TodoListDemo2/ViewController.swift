@@ -15,91 +15,369 @@ import CoreData
 //  Created by 诺诺诺诺诺 on 2022/10/22.
 //
 
-class ViewController: UIViewController,UICollectionViewDataSource {
+//class ViewController: UIViewController,UICollectionViewDataSource {
+//
+//    @IBOutlet var collectionView: UICollectionView!
+//
+//
+//    var NameData:[String] = ["eeee","lese","goto","todolist"]
+//
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        // Do any additional setup after loading the view.
+//        config()
+//        view.addSubview(collectionView)
+//    }
+//
+//    func config() {
+//        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+//
+//        collectionView.dataSource = self
+//        collectionView.register(MyCell.self
+//                                , forCellWithReuseIdentifier: "cell")
+//    }
+//
+//
+//    func createLayout() -> UICollectionViewCompositionalLayout {
+//            // 1
+//            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+//                                                    heightDimension: .absolute(600))
+//            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+//
+//        let itemAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+//        let itemAnother = NSCollectionLayoutItem(layoutSize: itemAnotherSize)
+//            // 2
+//            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.7), heightDimension: .absolute(600))
+//            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+//
+//            let groupAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+//
+//            let groupAnother = NSCollectionLayoutGroup.vertical(layoutSize: groupAnotherSize, repeatingSubitem: itemAnother, count: 2)
+//
+//            // 3
+//            group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: nil, top: nil, trailing: .fixed(8), bottom: nil)
+////
+////        let groups = NSCollectionLayoutGroup.vertical(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)), subitems: [group,groupAnother])
+//
+//            let section = NSCollectionLayoutSection(group: group)
+//            section.orthogonalScrollingBehavior = .continuous
+//            section.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+//            let layout = UICollectionViewCompositionalLayout(section: section)
+//            return layout
+//    }
+//
+//}
+//
+//extension ViewController {
+//    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return 4
+//    }
+//
+//    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+//        let title = UILabel(frame: CGRectMake(20, 20, cell.bounds.size.width, 40))
+//        title.text = NameData[indexPath.row]
+//        cell.contentView.addSubview(title)
+//
+//        if indexPath.row == 3 {
+//            let button = UIButton()
+//            button.frame = cell.contentView.frame
+//            button.addTarget(self, action: #selector(didTapButton), for: .touchDown)
+//            cell.contentView.addSubview(button)
+//        }
+//
+//        cell.contentView.layer.cornerRadius = 10
+//        return cell
+//    }
+//
+//    @objc func didTapButton() {
+//        print("byd")
+//
+//        let rootVC = ListViewController()
+//        let navVC = UINavigationController(rootViewController: rootVC)
+//
+//        navVC.modalPresentationStyle = .fullScreen
+//        present(navVC, animated:  true)
+//    }
+//}
+
+enum Section: Int,CaseIterable {
+    case grid
+    case single
+    var columnCount: Int {
+        switch self {
+        case .grid:
+            return 2
+        case .single:
+            return 1
+        }
+    }
+}
+
+struct Label: Hashable {
+    let title: String
+}
+
+enum OutlineItem: Hashable {
+    case label(Label)
+}
+
+class ViewController: UIViewController,UICollectionViewDelegate {
     
     @IBOutlet var collectionView: UICollectionView!
     
+    typealias DataSource = UICollectionViewDiffableDataSource<Section, Int>
     
-    var NameData:[String] = ["eeee","lese","goto","todolist"]
-
+    private var dataSource: DataSource!
+    
+    private var datas: [[String]] = [["今天","计划","全部","旗标"],["今日任务"]]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        config()
+        
+        configCollectionView()
+        configDataSource()
+        
         view.addSubview(collectionView)
+        collectionView.delegate = self
+        collectionView.dataSource = dataSource
+        view.backgroundColor = .systemGray2
     }
-    
-    func config() {
-        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+
+    private func createLayout() -> UICollectionViewLayout {
         
-        collectionView.dataSource = self
-        collectionView.register(MyCell.self
-                                , forCellWithReuseIdentifier: "cell")
-    }
-    
-    
-    func createLayout() -> UICollectionViewCompositionalLayout {
-            // 1
-            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                    heightDimension: .absolute(600))
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let itemAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
-        let itemAnother = NSCollectionLayoutItem(layoutSize: itemAnotherSize)
-            // 2
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.7), heightDimension: .absolute(600))
-            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
-            let groupAnotherSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(40))
+        let layout = UICollectionViewCompositionalLayout { (sectionIndex, layoutEnvironment) -> NSCollectionLayoutSection? in
+
             
-            let groupAnother = NSCollectionLayoutGroup.vertical(layoutSize: groupAnotherSize, repeatingSubitem: itemAnother, count: 2)
-
-            // 3
-            group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: nil, top: nil, trailing: .fixed(8), bottom: nil)
-//
-//        let groups = NSCollectionLayoutGroup.vertical(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1)), subitems: [group,groupAnother])
-
+            guard let sectionType = Section(rawValue: sectionIndex) else {
+                return nil
+            }
+            
+            let columns = sectionType.columnCount
+            
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+            
+            let groupWidth = columns == 1 ? NSCollectionLayoutDimension.fractionalWidth(1.0) : NSCollectionLayoutDimension.fractionalWidth(0.5)
+            
+            let groupSize1 = NSCollectionLayoutSize(widthDimension: groupWidth, heightDimension: .absolute(200))
+            let groupSize2 = NSCollectionLayoutSize(widthDimension: groupWidth, heightDimension: .absolute(50))
+            
+            let group = columns == 1 ? NSCollectionLayoutGroup.horizontal(layoutSize: groupSize2, repeatingSubitem: item, count: columns) : NSCollectionLayoutGroup.horizontal(layoutSize: groupSize1, repeatingSubitem: item, count: columns)
+            
             let section = NSCollectionLayoutSection(group: group)
-            section.orthogonalScrollingBehavior = .continuous
-            section.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
-            let layout = UICollectionViewCompositionalLayout(section: section)
-            return layout
+            
+            // section header
+            
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(44))
+            
+            let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+            
+            section.boundarySupplementaryItems = [header]
+            
+            return section
+            
+        }
+        
+        return layout
     }
+    
+    private func configCollectionView() {
+        
+       
+        
+        collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: createLayout())
+        collectionView.backgroundColor = .systemBackground
+        
+        
+        collectionView.register(LabelCell.self
+                                , forCellWithReuseIdentifier: "labelCell")
+        
+        collectionView.register(HeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView")
+        
+        
+    }
+    
+    private func configDataSource() {
+        
+        dataSource = DataSource(collectionView: collectionView, cellProvider: { (collectionView, indexPath, item) -> UICollectionViewCell? in
+            
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "labelCell", for: indexPath) as? LabelCell else {
+                fatalError()
+            }
+            
 
+//            cell.textLabel.text = "\(item)"
+            
+//            if indexPath.section == 0 {
+//                cell.backgroundColor = .systemBlue
+//            } else {
+//                cell.backgroundColor = .systemGreen
+//            }
+            
+            //cell.reconfig(title: self.datas[indexPath.section][indexPath.row])
+//            cell.textLabel.textAlignment = .center
+//            cell.textLabel.font = UIFont(name: "AvenirNext-Bold", size: 15)
+            cell.textLabel.text = self.datas[indexPath.section][indexPath.row]
+            cell.textLabel.textColor = .systemBlue
+            cell.contentView.addSubview(cell.textLabel)
+            
+//            if indexPath.section == 1 {
+//                print("didadd")
+//                cell.configButton()
+//            }
+            
+            return cell
+        })
+        
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Int>()
+        
+        snapshot.appendSections([.grid,.single])
+        
+        snapshot.appendItems(Array(1...4), toSection: .grid)
+        
+        snapshot.appendItems(Array(13...13), toSection: .single)
+        
+        dataSource.apply(snapshot, animatingDifferences: false)
+        
+        //headerView
+        
+        dataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) in
+            
+        guard let headerView = self.collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "HeaderView", for: indexPath) as? HeaderView else {
+                fatalError()
+        }
+            
+            headerView.textLabel.text = indexPath.section == 0 ? " " : "我的列表"
+            
+            headerView.textLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+            return headerView
+            
+        }
+    }
 }
 
 extension ViewController {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 4
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        let title = UILabel(frame: CGRectMake(20, 20, cell.bounds.size.width, 40))
-        title.text = NameData[indexPath.row]
-        cell.contentView.addSubview(title)
-        
-        if indexPath.row == 3 {
-            let button = UIButton()
-            button.frame = cell.contentView.frame
-            button.addTarget(self, action: #selector(didTapButton), for: .touchDown)
-            cell.contentView.addSubview(button)
-        }
-        
-        cell.contentView.layer.cornerRadius = 10
-        return cell
-    }
-    
     @objc func didTapButton() {
         print("byd")
-        
+
         let rootVC = ListViewController()
         let navVC = UINavigationController(rootViewController: rootVC)
-        
+
         navVC.modalPresentationStyle = .fullScreen
         present(navVC, animated:  true)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        let rootVC = ListViewController()
+        let navVC = UINavigationController(rootViewController: rootVC)
+    
+        navVC.modalPresentationStyle = .fullScreen
+        present(navVC, animated:  true)
+    }
+    
 }
+
+class LabelCell: UICollectionViewCell {
+    
+    public var textLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        return label
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        config()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    private func config() {
+        textLabelConstraints()
+//        self.contentView.addSubview(textLabel)
+//        let headerDisclosureOption = UICellAccessory.OutlineDisclosureOptions(style: .header)
+//        self.accessories = [.outlineDisclosure(options:headerDisclosureOption)]
+        //self.backgroundColor = .systemBrown
+    }
+    
+    public func reconfig(title: String) {
+        print(title)
+        
+//        var content = self.defaultContentConfiguration()
+//        content.text = title
+//        self.contentConfiguration = content
+//        textLabel.textAlignment = .center
+//        textLabel.font = UIFont(name: "AvenirNext-Bold", size: 15)
+//        textLabel.text = title
+//        contentView.addSubview(textLabel)
+    }
+    
+    private func textLabelConstraints() {
+        addSubview(textLabel)
+        
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+              textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+              textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+              textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
+            ])
+          }
+    
+    public func configButton() {
+        let button = UIButton()
+        button.frame = self.contentView.frame
+        button.tintColor = .systemBlue
+        button.addTarget(self, action: #selector(ViewController.didTapButton), for: .touchDown)
+        self.contentView.addSubview(button)
+    }
+    
+   
+}
+
+class HeaderView: UICollectionViewCell {
+    public var textLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = UIFont.preferredFont(forTextStyle: .headline)
+        return label
+    }()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        commonInit()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        commonInit()
+    }
+    
+    private func commonInit() {
+        textLabelConstraints()
+    }
+    
+    private func textLabelConstraints() {
+        addSubview(textLabel)
+        
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+              textLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+              textLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+              textLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+              textLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8)
+            ])
+          }
+}
+
+
 
 class MyCell: UICollectionViewCell {
     
