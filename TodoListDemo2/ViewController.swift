@@ -130,8 +130,25 @@ class ViewController: UIViewController,UICollectionViewDelegate {
     
     private var dataSource: DataSource!
     
-    private var datas: [[String]] = [["今天","计划","全部","旗标"],["今日任务"]]
+    private var datas: [[String]] = [["今天","计划","全部","旗标"],["今日任务","差不多得了哈"]]
     private var imagedatas: [[String]] = [["mic.fill","sun.min","pencil","pencil.and.outline"],["sunset.fill"]]
+    
+    private let floatingButton: UIButton = {
+        let button = UIButton(frame: CGRect(x: 0, y: 0, width: 70, height: 70))
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 35
+        button.backgroundColor = .systemBlue
+        let image = UIImage(systemName: "plus",
+                            withConfiguration: UIImage.SymbolConfiguration(pointSize: 40, weight: .medium))
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        button.setTitleColor(.white, for: .normal)
+        return button
+    }()
+    
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -144,7 +161,19 @@ class ViewController: UIViewController,UICollectionViewDelegate {
         collectionView.delegate = self
         collectionView.dataSource = dataSource
         view.backgroundColor = .systemGray2
+        
+        //flaoting add list button
+        configFloatingButton()
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        floatingButton.frame = CGRect(x: 50,
+                                      y: view.frame.size.height - 150
+                                        , width: 70, height: 70)
+    }
+    
+    
 
     private func createLayout() -> UICollectionViewLayout {
         
@@ -230,9 +259,9 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             cell.textLabel.font = UIFont(name: "AvenirNext-Bold", size: 18)
             cell.textLabel.textColor = indexPath.section == 0 ? .systemGray4 : .systemBlue
             cell.textLabel.text = self.datas[indexPath.section][indexPath.row]
+            print(indexPath.section," ",indexPath.row)
             //cell.textLabel.textColor = .systemBlue
             //cell.contentView.addSubview(cell.textLabel)
-            
             
             cell.backgroundColor = .white
             
@@ -241,6 +270,7 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             cell.layer.cornerRadius = 10;
 
             cell.contentView.layer.masksToBounds = true;
+            
             
             if indexPath.section == 0 {
                 cell.configImage(name: self.imagedatas[indexPath.section][indexPath.row])
@@ -256,13 +286,16 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             return cell
         })
         
+        //snapshot for database
         var snapshot = NSDiffableDataSourceSnapshot<Section, Int>()
         
         snapshot.appendSections([.grid,.single])
         
-        snapshot.appendItems(Array(1...4), toSection: .grid)
+        snapshot.appendItems(Array(1...datas[0].count), toSection: .grid)
         
-        snapshot.appendItems(Array(13...13), toSection: .single)
+        snapshot.appendItems(Array(datas[0].count + 1...datas[0].count + datas[1].count), toSection: .single)
+        
+    
         
         dataSource.apply(snapshot, animatingDifferences: false)
         
@@ -281,6 +314,52 @@ class ViewController: UIViewController,UICollectionViewDelegate {
             return headerView
             
         }
+    }
+    
+    func configFloatingButton() {
+        view.addSubview(floatingButton)
+        floatingButton.addTarget(self, action: #selector(didTapAddNewListButton), for: .touchDown)
+    }
+    
+    func configNewSnapShot() -> NSDiffableDataSourceSnapshot<Section, Int> {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Int>()
+        
+        snapshot.appendSections([.grid,.single])
+        
+        snapshot.appendItems(Array(1...datas[0].count), toSection: .grid)
+        
+        snapshot.appendItems(Array(datas[0].count + 1...datas[0].count + datas[1].count), toSection: .single)
+        return snapshot
+    }
+    
+    func reconfigDatasource() {
+       var snapshot = configNewSnapShot()
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
+    //add new list
+    @objc func didTapAddNewListButton() {
+        let alert = UIAlertController(title: "New List", message: "Enter new List", preferredStyle: .alert)
+        
+        alert.addTextField(configurationHandler: nil)
+        
+        alert.addAction(UIAlertAction(title: "Submit", style: .cancel,handler: { [weak self] _ in
+            guard let field = alert.textFields?.first, let text = field.text, !text.isEmpty else {
+                return
+            }
+            
+            //self?.createItem(name: text)
+            
+            //self?.addNewListToSnapShot(text: text)
+            
+            self?.datas[1].append(text)
+            
+            self?.reconfigDatasource()
+        }))
+        
+        present(alert, animated: true)
+        
+        
     }
 }
 
@@ -306,6 +385,7 @@ extension ViewController {
             present(navVC, animated:  true)
         }
     }
+    
     
 }
 
